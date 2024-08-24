@@ -1,5 +1,10 @@
+PImage tester;
+
 void setup(){
   size(400,400);
+  tester = loadImage("test_graph.png");
+  tester.resize(400,400);
+
 }
 
 class Triangle{
@@ -32,10 +37,47 @@ class image{
       image.get(i).draw_t();
     }
   }
+  void mutate(){
+    float chooser = random(1);
+    if(chooser > 0.6){
+      image.remove(floor(random(0,image.size())));
+      image.add(new Triangle(int(random(0,400)),int(random(0,400)),int(random(0,400)),int(random(0,400)),int(random(0,400)),int(random(0,400))));
+    }
+  }
 }
 
-image i = new image(100);
+float leastSquares(color[]a,color[]b){
+ float error = 0;
+  for(int i = 0; i<a.length;i++){
+    error += (brightness(a[i])-brightness(b[i]))*(brightness(a[i])-brightness(b[i]));
+  }
+  return error;
+}
+
+color[] colors = new color[160000];
+color[] colors2 = new color[160000];
+
+image i = new image(10);
 
 void draw(){
+  background(255);
+  
   i.show();
+  loadPixels();
+  colors = pixels;
+  
+  delay(10000);
+  
+  //image(tester,0,0);
+  
+  loadPixels();
+  for(int i = 0; i < pixels.length;i++){
+    pixels[i] = color(brightness(pixels[i]));
+  }
+  
+  updatePixels();
+  
+  loadPixels();
+  colors2 = pixels;
+  println(leastSquares(colors,colors2));
 }
