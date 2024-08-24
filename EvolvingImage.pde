@@ -91,13 +91,15 @@ float leastSquares(float[]a, float[]b) {
   for (int i = 0; i<a.length; i++) {
     error += (a[i]-b[i])*(a[i]-b[i]);
   }
-  return -error;
+  return error;
 }
 
+int counter = 0;
 
 void draw() {
   background(255);
   images.sort((a,b) -> {return int(a.score-b.score);});
+  println("Epoch:" + counter + " Max Score:" + images.get(0).score);
   images.get(0).show();
   for(int i = 50; i < 100; i++){
     images.set(i,images.get(0).reproduce(images.get(floor(random(50))),images.get(floor(random(50)))));
@@ -105,4 +107,5 @@ void draw() {
   for(int i = 0; i < 100; i ++){
     images.get(i).setScore(tester);
   }
+  counter++;
 }
