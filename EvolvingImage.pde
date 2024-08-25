@@ -2,6 +2,7 @@ PImage tester;
 float[] pixies;
 
 ArrayList<image> images = new ArrayList<image>();
+float threshold = 0.85;
 
 void setup() {
   size(400, 400);
@@ -9,8 +10,8 @@ void setup() {
   tester = loadImage("Untitled.jpeg");
   tester.resize(400, 400);
 
-  for (int i = 0; i < 100; i++) {
-    images.add(new image(100));
+  for (int i = 0; i < 25; i++) {
+    images.add(new image(50));
     images.get(i).setScore(tester);
   }
 }
@@ -19,15 +20,18 @@ class Triangle {
   PVector a;
   PVector b;
   PVector c;
-  Triangle(int x1, int x2, int x3, int y1, int y2, int y3) {
+  float br;
+  float t;
+  Triangle(int x1, int x2, int x3, int y1, int y2, int y3, float brightness, float transparency) {
     a = new PVector(x1, y1);
     b = new PVector(x2, y2);
     c = new PVector(x3, y3);
+    br = brightness;
+    t = transparency;
   }
   void draw_t() {
-    line(a.x, a.y, b.x, b.y);
-    line(b.x, b.y, c.x, c.y);
-    line(c.x, c.y, a.x, a.y);
+    fill(br, t);
+    triangle(a.x, a.y, b.x, b.y, c.x, c.y);
   }
 }
 
@@ -38,7 +42,7 @@ class image {
   image(int n) {
     nt = n;
     for (int i = 0; i < n; i++) {
-      image.add(new Triangle(int(random(0, 400)), int(random(0, 400)), int(random(0, 400)), int(random(0, 400)), int(random(0, 400)), int(random(0, 400))));
+      image.add(new Triangle(int(random(0, 400)), int(random(0, 400)), int(random(0, 400)), int(random(0, 400)), int(random(0, 400)), int(random(0, 400)), int(random(0, 255)), int(random(255))));
     }
   }
   void show() {
@@ -49,9 +53,9 @@ class image {
   }
   void mutate() {
     float chooser = random(1);
-    if (chooser > 0.85) {
+    if (chooser > threshold) {
       image.remove(floor(random(0, image.size())));
-      image.add(new Triangle(int(random(0, 400)), int(random(0, 400)), int(random(0, 400)), int(random(0, 400)), int(random(0, 400)), int(random(0, 400))));
+      image.add(new Triangle(int(random(0, 400)), int(random(0, 400)), int(random(0, 400)), int(random(0, 400)), int(random(0, 400)), int(random(0, 400)), int(random(0, 255)), int(random(255))));
     }
   }
   float[] get_pixels() {
@@ -64,6 +68,10 @@ class image {
     return bright;
   }
   image reproduce(image a, image b) {
+    float otherc = random(1);
+    if(otherc > 0.5){
+      return otherrepro(a,b);
+    }else{
     image child = new image(a.nt);
     for (int i = 0; i < b.image.size(); i++) {
       float chooser = random(1);
@@ -75,6 +83,7 @@ class image {
       child.mutate();
     }
     return child;
+    }
   }
   void setScore(PImage target) {
     pixies = new float[target.pixels.length];
@@ -83,6 +92,21 @@ class image {
     }
     float[]pix = get_pixels();
     score = leastSquares(pix, pixies);
+  }
+  image otherrepro(image a, image b) {
+    image child = new image(50);
+    for (int i = 0; i < a.image.size(); i++) {
+      child.image.get(i).a.x = (a.image.get(i).a.x+b.image.get(i).a.x)/2;
+      child.image.get(i).a.x = (a.image.get(i).b.x+b.image.get(i).b.x)/2;
+      child.image.get(i).a.x = (a.image.get(i).c.x+b.image.get(i).c.x)/2;
+      child.image.get(i).a.x = (a.image.get(i).a.y+b.image.get(i).a.y)/2;
+      child.image.get(i).a.x = (a.image.get(i).b.y+b.image.get(i).b.y)/2;
+      child.image.get(i).a.x = (a.image.get(i).c.y+b.image.get(i).c.y)/2;
+      child.image.get(i).br =  (a.image.get(i).br+b.image.get(i).br)/2;
+      child.image.get(i).t =  (a.image.get(i).t+b.image.get(i).t)/2;
+    }
+    child.mutate();
+    return child;
   }
 }
 
@@ -98,13 +122,16 @@ int counter = 0;
 
 void draw() {
   background(255);
-  images.sort((a,b) -> {return int(a.score-b.score);});
-  println("Epoch:" + counter + " Max Score:" + images.get(0).score);
-  images.get(0).show();
-  for(int i = 50; i < 100; i++){
-    images.set(i,images.get(0).reproduce(images.get(floor(random(50))),images.get(floor(random(50)))));
+  images.sort((a, b) -> {
+    return int(a.score-b.score);
   }
-  for(int i = 0; i < 100; i ++){
+  );
+  println("Epoch: " + counter + " Max Score: " + images.get(0).score);
+  images.get(0).show();
+  for (int i = 13; i < 25; i++) {
+    images.set(i, images.get(0).reproduce(images.get(floor(random(25))), images.get(floor(random(25)))));
+  }
+  for (int i = 0; i < 25; i ++) {
     images.get(i).setScore(tester);
   }
   counter++;
